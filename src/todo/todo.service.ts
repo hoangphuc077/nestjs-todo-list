@@ -6,7 +6,7 @@ import * as uuid from 'uuid';
 import { TodoCreateDto } from './dto/todo.createdto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoListDto } from './dto/todo.listdto';
-import { TodoEntity } from './entity/todo.entity';
+import { TodoEntity } from '@todo/entity/todo.entity';
 
 @Injectable()
 export class TodoService {
