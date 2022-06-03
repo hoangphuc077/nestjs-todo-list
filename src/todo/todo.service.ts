@@ -7,27 +7,43 @@ import { TodoCreateDto } from './dto/todo.createdto';
 import { TodoDto } from './dto/todo.dto';
 import { TodoListDto } from './dto/todo.listdto';
 import { TodoEntity } from '@todo/entity/todo.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm/repository/Repository';
+import { identity } from 'rxjs';
 
 @Injectable()
 export class TodoService {
     todos: TodoEntity[] = todosMock;
+    constructor(
+        @InjectRepository(TodoEntity)
+        private readonly todoRepo: Repository<TodoEntity>,
+    ){}
 
     async getOneTodo(id: string): Promise<TodoDto> {
-        const todo = this.todos.find(todo => todo.id === id);
+        const todo = await this.todoRepo.findOne({
+            where: {id},
+            relations: ['tasks'],
+        });
         if (!todo){
             throw new HttpException(`Todo ${id} not found`, HttpStatus.BAD_REQUEST);
         }
-        return toPromise(toTodoDto(todo));
+        return toTodoDto(todo);
     }
     async create(todoCreateDto: TodoCreateDto): Promise<TodoDto>{
         const {name, description} = todoCreateDto;
         const todo = {
-            id: uuid.v4(),
+            id: '0',
             name: name,
             description: description
         };
-        this.todos.push(todo);
-        return toPromise(toTodoDto(todo));
+        const todoEntity: TodoEntity = await this.todoRepo.create({
+            id: todo.id,
+            name: todo.name,
+            description: todo.description,
+        });
+        await this.todoRepo.save(todoEntity);
+
+        return toTodoDto(todoEntity);
     }
     async update(id: string, todo: TodoDto): Promise<TodoDto>{
         const findTodo = this.todos.find(todo => todo.id === id);
@@ -44,12 +60,13 @@ export class TodoService {
         return toPromise(toTodoDto(todo)); 
     }
     async getAllTodo(): Promise<TodoListDto>{
-        let todoList: TodoListDto = {
-            todos: []
+        const todos = await this.todoRepo.find({
+            relations: ['tasks']
+        });
+        todos.map((todo: TodoEntity) => toTodoDto(todo));
+        const todoList: TodoListDto = {
+            todos: todos
         };
-        this.todos.forEach(todo =>{
-            todoList.todos.push(toTodoDto(todo));
-        })
         return toPromise(todoList);
 
     }

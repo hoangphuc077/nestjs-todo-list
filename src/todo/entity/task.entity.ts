@@ -13,7 +13,7 @@ export class TaskEntity{
     name: string;
 
     @CreateDateColumn()
-    createOn: Date;
+    createdOn: Date;
 
     @ManyToOne(type => TodoEntity, todo => todo.tasks) todo?: TodoEntity;
     
