@@ -9,7 +9,6 @@ import { TodoListDto } from './dto/todo.listdto';
 import { TodoEntity } from '@todo/entity/todo.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm/repository/Repository';
-import { identity } from 'rxjs';
 
 @Injectable()
 export class TodoService {
